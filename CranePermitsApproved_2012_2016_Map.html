@@ -44,21 +44,21 @@
 	}
       #play, #clock {
       	position: absolute;
-      	top: 85px;
+      	top: 75px;
       }
       #play {
-		top: 60px;
+		top: 50px;
       	left: 15px;
       }
       #clock {
       	left: 15px;
-		font-size: 32px;
+		font-size: 25px;
 		font-family: "Arial", "Verdana", Sans-serif;
 		font-weight: bold;
 		color: #9C9C9C;
       }
 	h1 {
-		font-size: 36px;
+		font-size: 25px;
 		position: absolute;
 		top: -15px;
 		left: 15px;
@@ -113,10 +113,11 @@ var ext_color_domain = [0,20,50,85,150,275,500]
 var color = d3.scale.threshold()
 	.domain(color_domain)
 	.range(["#f1eef6","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0","#034e7b"]);
-width = 1064, height = 820;  // map width and height, matches 
+<!-- width = 1064, height = 820;  // map width and height, matches  -->
+width = 700, height = 550;
 center = [width / 2, height / 2];
 projection = d3.geo.mercator()   // define our projection with parameters
-.scale(82500)
+.scale(56200)
 .center( [-73.9,40.712] )
 .translate([width / 2, height / 2]);
 
@@ -142,10 +143,11 @@ function init() {
 
 function setMap() {
 
-  width = 1064, height = 820;  // map width and height, matches 
+  <!-- width = 1064, height = 820;  // map width and height, matches  -->
+  width = 700, height = 550;
   center = [width / 2, height / 2];
   projection = d3.geo.mercator()   // define our projection with parameters
-    .scale(82500)
+    .scale(56200)
 	.center( [-73.9,40.712] )
     .translate([width / 2, height / 2]);
 
@@ -330,7 +332,7 @@ legend.append("rect")
 	.attr("x", 50)
 	.attr("y", function(d, i){return height - (i*ls_h) - 2*ls_h;})
 	//.attr('transform', 'translate(10, -720)') /* XY position of legend*/
-	.attr('transform', 'translate(-40, -500)') /* XY position of legend*/
+	.attr('transform', 'translate(-40, -235)') /* XY position of legend*/
 	.attr("width", ls_w)
 	.attr("height", ls_h)
 	.style("fill", function(d, i){return color(d);})
@@ -339,7 +341,7 @@ legend.append("text")
 	.attr("x", 80)
 	.attr("y", function(d, i){return height - (i*ls_h) - ls_h - 5;})
 	//.attr('transform', 'translate(10, -720)') /* XY position of legend*/
-	.attr('transform', 'translate(-40, -500)') /* XY position of legend*/
+	.attr('transform', 'translate(-40, -235)') /* XY position of legend*/
 	.text(function(d, i){return legend_labels[i];});
 
 window.onload = init();  // magic starts here
