@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href="../build/nv.d3.css" rel="stylesheet" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
+    <script src="../build/nv.d3.js"></script>
+
+    <style>
+        text {
+            font: 14px sans-serif;
+        }
+        svg {
+            display: block;
+        }
+        html, body, #chart1, svg {
+            margin: 0px;
+            padding: 0px;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div id="chart1">
+    <svg></svg>
+</div>
+
+<script>
+
+    historicalBarChart = [
+     {
+    key: "Derrick",
+    color: "#9BBB59",
+    values:
+    [ 
+      { x : "2012", y : 6 },
+      { x : "2013", y : 5 },
+      { x : "2014", y : 1 },
+      { x : "2015", y : 5 },
+	  { x : "2016", y : 59 }
+    ]
+  },
+
+ {
+    key: "Fix/Climber Tower Crane",
+    color: "#EEB058",
+    values:
+    [      
+	 { x : "2012", y : 98},
+	 { x : "2013", y : 137},
+	 { x : "2014", y : 166},
+	 { x : "2015", y : 275},
+	 { x : "2016", y : 315}
+    ]
+  },
+
+
+ {
+    key: "Mast Climber",
+    color: "#C0504D",
+    values:
+    [      
+	 { x : "2012", y : 500},
+	 { x : "2013", y : 24},
+	 { x : "2014", y : 2},
+	 { x : "2015", y : 0},
+	 { x : "2016", y : 0}
+    ]
+  },
+ 
+  {
+    key: "Mobile Crane",
+    color: "#8064A2",
+    values:
+    [      
+	 { x : "2012", y : 5003},
+	 { x : "2013", y : 5810},
+	 { x : "2014", y : 7222},
+	 { x : "2015", y : 8037},
+	 { x : "2016", y : 9899}
+    ]
+  },
+   {
+    key: "Mobile Tower Crane",
+    color: "#49D9FF",
+    values:
+    [      
+	 { x : "2012", y : 17},
+	 { x : "2013", y : 12},
+	 { x : "2014", y : 36},
+	 { x : "2015", y : 21},
+	 { x : "2016", y : 22}
+    ]
+  },
+  {
+    key: "Pile Driver",
+    color: "#49D9FF",
+    values:
+    [      
+	 { x : "2012", y : 18},
+	 { x : "2013", y : 14},
+	 { x : "2014", y : 5},
+	 { x : "2015", y : 1},
+	 { x : "2016", y : 3}
+    ]
+  }
+  
+
+
+
+
+    ];
+
+    nv.addGraph(function() {
+        var chart = nv.models.multiBarChart()
+		
+        .showControls(true)
+        .stacked(true);
+		
+        chart.yAxis
+            .tickFormat(d3.format(',.0f'))
+            .axisLabelDistance(0);
+
+        chart.xAxis
+            .staggerLabels(true)
+            .axisLabel('');
+
+        chart
+            .reduceXTicks(true)
+
+          
+
+        d3.select('#chart1 svg')
+            .datum(historicalBarChart)
+            .call(chart);
+
+        nv.utils.windowResize(chart.update);
+        return chart;
+    });
+
+
+</script>
+</body>
+</html>
