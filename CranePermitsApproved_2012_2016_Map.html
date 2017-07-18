@@ -4,25 +4,11 @@
     <meta charset="utf-8">
     <title>Crane Permits Approved 2012-2016</title>
     <style>
-      <!-- #wrapper { -->
-          <!-- width: 1064px; -->
-          <!-- margin: -30px auto 0; -->
-      <!-- } -->
-      <!-- #map { -->
-          <!-- width: 1064px; -->
-          <!-- height: 820px; -->
-          <!-- position: relative; -->
-      <!-- } -->
       .stroke {
         fill: none;
         stroke: #888;
         stroke-width: 2px;
       }
-      
-      .fill {
-        fill: #fff;
-      }
-
       
       .land {
         fill: #222;
@@ -37,10 +23,10 @@
           fill: gray;
           stroke: white;
       }
+
 	#legend {
 		font-size: 12px;
 		position: absolute;
-
 	}
       #play, #clock {
       	position: absolute;
@@ -78,6 +64,41 @@
 	h3 {
 		font-size: 8px;
 	}
+	
+
+	.bar {
+	  fill: #3690C0;
+	}
+
+	.bar:hover {
+	  fill: brown;
+	}
+
+	.axis text {
+	  font: 10px sans-serif;
+	  
+	}
+
+	.axis path,
+	.axis line {
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: crispEdges;
+	}
+
+
+	.x.axis path {
+	  display: none;
+	}
+	
+	.grid .tick {
+    stroke: lightgrey;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+	}
+	.grid path {
+          stroke-width: 0;
+	}
     </style>
 </head>
 
@@ -86,7 +107,9 @@
 	<div id="wrapper">	
 		<h1>Crane Permits Approved</h1>
 		<!-- <h2>Average Workdays</h2> -->
-		<div id="map"></div>
+		<!-- <div id="map"></div> -->
+		<div class="col-md-6" id="map"></div>
+		<!-- <div class="col-md-6" id="mapChart"></div> -->
 		<button id="play">play</button>
 		<span id="clock">2012</span>
 	</div>
@@ -98,13 +121,16 @@
 
 		</div>
 	</div> 
+<svg class="chart" transform="translate(600 -580)"></svg>
 
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <script src="https://d3js.org/d3.geo.projection.v0.min.js"></script>
 <script src="https://d3js.org/queue.v1.min.js"></script>
 <script src="https://d3js.org/topojson.v1.min.js"></script>
 
+
 <script>
+//MAP
   //globals
 var width, height, center, projection, path, svg, attributeArray = [], currentAttribute = 0, playing = false, g;
 var legend_labels = ["<20", "20 - 49", "50 - 84", "85 - 149", "150 - 274", "275 - 499", ">=500"]
@@ -120,29 +146,19 @@ projection = d3.geo.mercator()   // define our projection with parameters
 .scale(56200)
 .center( [-73.9,40.712] )
 .translate([width / 2, height / 2]);
-
 path = d3.geo.path()  // create path generator function
   .projection(projection);  // add our define projection to it
-
-
 svg = d3.select("#map").append("svg")   // append a svg to our html div to hold our map
   .attr("width", width)
   .attr("height", height);
-
-
 loadData();  // let's load our data next
 g = svg.append("g");
-
-
 function init() {
-
   //setMap();
+  chartUpdate(0);
   animateMap();
-
 }
-
 function setMap() {
-
   <!-- width = 1064, height = 820;  // map width and height, matches  -->
   width = 700, height = 550;
   center = [width / 2, height / 2];
@@ -150,29 +166,20 @@ function setMap() {
     .scale(56200)
 	.center( [-73.9,40.712] )
     .translate([width / 2, height / 2]);
-
   path = d3.geo.path()  // create path generator function
       .projection(projection);  // add our define projection to it
-
-
   svg = d3.select("#wrapper").append("svg")   // append a svg to our html div to hold our map
       .attr("width", width)
       .attr("height", height);
-
-
   loadData();  // let's load our data next
-
 }
-
 function loadData() {
-
   queue()   // queue function loads all external data files asynchronously 
     .defer(d3.json, "data/CD_topoJSON.json")  // our geometries
     .defer(d3.csv, "data/CranePermitsApproved_CD_2012_2016.csv")  // and associated data in csv file
     .await(processData);   // once all files are loaded, call the processData function passing
                            // the loaded objects as arguments
 }
-
 function processData(error,hex,hexData) {
   // function accepts any errors from the queue function as first argument, then
   // each data object in the order of chained defer() methods above
@@ -195,13 +202,11 @@ function processData(error,hex,hexData) {
     }
   }
   
-
   d3.select('#clock').html(attributeArray[currentAttribute]);  // populate the clock initially with the current date
   drawMap(hex);  // let's mug the map now with our newly populated data object
+
 }
-
 function drawMap(hex) {
-
     svg.selectAll(".collection")   // select collection objects (which don't exist yet)
       .data(topojson.feature(hex, hex.objects.collection).features)  // bind data to these non-existent objects
       .enter().append("path") // prepare data to be appended to paths
@@ -219,14 +224,12 @@ function drawMap(hex) {
 	.style("fill", function (d) {
 		return getColor(d.properties[attributeArray[currentAttribute]], dataRange);
 	});
-
 }
-
 function sequenceMap() {
   
     var dataRange = getDataRange(); // get the min/max values from the current date's range of data values
     d3.selectAll('.collection').transition()  //select all the collections and prepare for a transition to new values
-		.duration(750);
+		.duration(300);
 	d3.selectAll('.collection')
       <!-- .duration(750)  // give it a smooth time period for the transition -->
       <!-- .attr('fill-opacity', function(d) { -->
@@ -236,10 +239,7 @@ function sequenceMap() {
 	.style("fill", function (d) {
 		return getColor(d.properties[attributeArray[currentAttribute]], dataRange);
 	});
-
 }
-
-
 <!-- function getColor(valueIn, valuesIn) { -->
   <!-- var nullColor = "#9C9C9C"; -->
   <!-- var color = d3.scale.linear() // create a linear scale -->
@@ -256,29 +256,21 @@ function sequenceMap() {
 <!-- } -->
 function getColor(valueIn, valuesIn) {
   var nullColor = "#D3D3D3";
-
-
 	if (valueIn == undefined || valueIn == 0){
 		return nullColor} else{
 	return color(valueIn)  // return that number to the caller
 	}
 }
-
 <!-- function getColor(valueIn, valuesIn) { -->
-
   <!-- var color = d3.scale.quantize() -->
     <!-- .domain([0.68, 300.56]) -->
 	<!-- .range(d3.range(7).map(function(i) { return "q" + i + "-7"; })); -->
-
   <!-- return color(valueIn);  // return that number to the caller -->
 <!-- } -->
-
 function getDataRange() {
   // function loops through all the data values from the current data attribute
   // and returns the min and max values
-
   var min = Infinity, max = -Infinity;  
-
   d3.selectAll('.collection')
     .each(function(d,i) {
       var currentValue = d.properties[attributeArray[currentAttribute]];
@@ -292,9 +284,7 @@ function getDataRange() {
   });
   return [min,max];  //boomsauce
 }
-
 function animateMap() {
-
   var timer;  // create timer object
   d3.select('#play')  
     .on('click', function() {  // when user clicks the play button
@@ -305,9 +295,10 @@ function animateMap() {
           } else {
               currentAttribute = 0;  // or reset it to zero
           }
+		  chartUpdate(currentAttribute);
           sequenceMap();  // update the representation of the map 
           d3.select('#clock').html(attributeArray[currentAttribute]);  // update the clock
-        }, 1500);
+        }, 2000);
       
         d3.select(this).html('stop');  // change the button label to stop
         playing = true;   // change the status of the animation
@@ -317,8 +308,8 @@ function animateMap() {
         playing = false;   // change the status again
       }
   });
+  
 }
-
 var legend = svg.selectAll("g.legend")
 	.data(ext_color_domain)
 	.enter().append("g")
@@ -327,12 +318,11 @@ var legend = svg.selectAll("g.legend")
 	.attr("class", "legend");
 	
 var ls_w = 25, ls_h = 25;
-
 legend.append("rect")
 	.attr("x", 50)
 	.attr("y", function(d, i){return height - (i*ls_h) - 2*ls_h;})
-	//.attr('transform', 'translate(10, -720)') /* XY position of legend*/
-	.attr('transform', 'translate(-40, -235)') /* XY position of legend*/
+	//.attr('transform', 'translate(10, -720)') // XY position of legend
+	.attr('transform', 'translate(-40, -235)') // XY position of legend
 	.attr("width", ls_w)
 	.attr("height", ls_h)
 	.style("fill", function(d, i){return color(d);})
@@ -340,12 +330,134 @@ legend.append("rect")
 legend.append("text")
 	.attr("x", 80)
 	.attr("y", function(d, i){return height - (i*ls_h) - ls_h - 5;})
-	//.attr('transform', 'translate(10, -720)') /* XY position of legend*/
-	.attr('transform', 'translate(-40, -235)') /* XY position of legend*/
+	//.attr('transform', 'translate(10, -720)') // XY position of legend
+	.attr('transform', 'translate(-40, -235)') // XY position of legend
 	.text(function(d, i){return legend_labels[i];});
-
 window.onload = init();  // magic starts here
+
+//BAR CHART
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    <!-- width = 960 - margin.left - margin.right, -->
+    <!-- height = 500 - margin.top - margin.bottom; -->
+	width = 960 - margin.left - margin.right,
+    height = 550 - margin.top - margin.bottom;
+
+var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var chart = d3.select(".chart")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	
+// function for the x grid lines
+<!-- function make_x_axis() { -->
+    <!-- return d3.svg.axis() -->
+        <!-- .scale(x) -->
+        <!-- .orient("bottom") -->
+        <!-- .ticks(5) -->
+<!-- } -->
+// function for the y grid lines
+function make_y_axis() {
+  return d3.svg.axis()
+      .scale(y)
+      .orient("left")
+      .ticks(5)
+}	
+function chartUpdate(currentAttribute) {
+//chart.selectAll("*").remove();
+switch (currentAttribute) {
+case 0:
+d3.csv("data/CranePermitsApproved_CD_2012.csv", type, update)
+break;
+case 1:
+d3.csv("data/CranePermitsApproved_CD_2013.csv", type, update)
+break;
+case 2:
+d3.csv("data/CranePermitsApproved_CD_2014.csv", type, update)
+break;
+case 3:
+d3.csv("data/CranePermitsApproved_CD_2015.csv", type, update)
+break;
+case 4:
+d3.csv("data/CranePermitsApproved_CD_2016.csv", type, update)
+break;
+}
+}
+function update(error, data) {
+  x.domain(data.map(function(d) { return d.CD; }));
+  //y.domain([0, d3.max(data, function(d) { return d.Cnt; })]);
+  y.domain([0, 1400]);
+
+  	// Draw the x Grid lines
+    <!-- svg.append("g") -->
+        <!-- .attr("class", "grid") -->
+        <!-- .attr("transform", "translate(0," + height + ")") -->
+        <!-- .call(make_x_axis() -->
+            <!-- .tickSize(-height, 0, 0) -->
+            <!-- .tickFormat("") -->
+        <!-- ) -->
+  // Draw the y Grid lines
+    chart.append("g")            
+        .attr("class", "grid")
+        .call(make_y_axis()
+            .tickSize(-width+30, 20, 0)
+            .tickFormat("")
+        )
   
+  
+  chart.select(".x.axis").remove();
+  chart.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+	.selectAll("text")
+	.attr("y", 0)
+	.attr("x", 9)
+	.attr("dy", ".35em")
+	.attr("transform", "rotate(90)")
+	.style("text-anchor", "start");	
+  chart.select(".y.axis").remove();
+  chart.append("g")
+      .attr("class", "y axis")
+	  .attr("transform", "translate(20)")
+      .call(yAxis);
+  chart.selectAll(".bar").remove();
+  chart.selectAll(".bar")
+	.transition()
+	.duration(300)
+	.ease("exp")
+	.attr("width", 0).remove()
+
+  chart.selectAll(".bar")
+      .data(data)
+    .enter().append("rect")
+      .attr("class", "bar")
+	  .transition()
+	  .duration(300)
+      .attr("x", function(d) { return x(d.CD); })
+      .attr("y", function(d) { return y(d.Cnt); })
+      .attr("height", function(d) { return height - y(d.Cnt); })
+      .attr("width", x.rangeBand());
+	  
+
+}
+function type(d) {
+  d.Cnt = +d.Cnt; // coerce to number
+  return d;
+}
 </script>
 </body>
 </html>
