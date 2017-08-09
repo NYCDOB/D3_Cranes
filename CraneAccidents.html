@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crane Accidents</title>
+    <meta charset="utf-8" />
+	<link rel="stylesheet" href="leaflet.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="style2.css" type="text/css" media="screen" />
+	
+
+	
+</head>
+<style>
+	.info {
+		padding: 6px 8px;
+		background: white;
+		background: rgba(255,255,255,0.8);
+		box-shadow: 0 0 25px rgba(0,0,0,0.2);
+		border-radius: 5px;
+	}
+	.legend {
+		line-height: 34px;
+		color: #000000;
+		font-weight: bold;
+	}
+	.legend i {
+		width: 34px;
+		height: 34px;
+		float: left;
+		margin-right: 8px;
+		opacity: 0.7;
+	}
+	#slider {
+		position: absolute;
+		left: 50%;
+		margin-left: -390px;
+		bottom: 160px;
+		width: 600px;
+		height: 50px;	
+	}
+</style>
+<body>
+
+    <div id="map" style="width: 1064px; height: 820px"></div>
+	<div id="slider"></div> 
+
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+	<script src="./js/leaflet.js"></script>
+	<script src="./js/leaflet.ajax.min.js"></script>
+	<script src="jquery-2.1.1.min.js"></script>
+	<script src="static/chroniton.js"></script>
+	<link href="static/chroniton.css" rel="stylesheet">
+	<!-- <script type="text/javascript" src="data/DM_2016_LatLong.json"></script> -->
+	<!-- <script type="text/javascript" src="DM_2016_LatLong_2.json"></script> -->
+
+
+    <script>
+
+
+
+		
+	
+		var map = L.map('map').setView([40.705,-73.909], 11);
+		var toolserver = L.tileLayer('http://{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png');
+		//var stamen = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {attribution: ''}).addTo(map); /*Stamen.Toner*/
+		var stamen = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {attribution: ''}).addTo(map); /*Stamen.TonerLite*/
+		//var stamen = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {attribution: ''}).addTo(map); /*CartoDB.Positron*/
+		//var stamen = L.tileLayer('http://a.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: ''}).addTo(map); /*OpenStreeMap.Mapkin*/
+		//var stamen = L.tileLayer('http://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}', {attribution: ''}).addTo(map); /*OpenMapSurfer*/
+		//var stamen = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {attribution: ''}).addTo(map); /*Esri.NatGeoWorldMap*/
+		//var baseLayers = {"stamen": stamen, "toolserver-mapnik":toolserver};
+		//L.control.layers(baseLayers).addTo(map);
+		
+		var startYear = 2007;
+		var endYear = 2016;
+		var currentYear = startYear;
+		
+		var commuteById = d3.map();
+			
+		var projection = d3.geo.mercator()
+
+		onload = update2007();
+		
+		var info = L.control();
+		info.onAdd = function(map) {
+			this._div = L.DomUtil.create('div', 'info');
+			return this._div;
+		};
+		info.addTo(map);
+		
+		
+		// Add an SVG element to Leaflet’s overlay pane
+		var svg = d3.select(map.getPanes().overlayPane).append("svg"),
+			g = svg.append("g").attr("class", "leaflet-zoom-hide");
+			
+		map.scrollWheelZoom.disable();
+		
+		
+		<!-- var geojsonMarkerOptions = { -->
+			<!-- radius: 6, -->
+			<!-- fillColor: "#FF5500", -->
+			//color: "#000",
+			<!-- weight: 0, -->
+			//opacity: 1,
+			<!-- fillOpacity: 0.8 -->
+		<!-- }; -->
+		<!-- var pnts2007 = new L.geoJson.ajax("data/CraneAccidents_2007.json", {	 -->
+			<!-- pointToLayer: function (feature, latlng) { -->
+				<!-- var popupContent = "INCIDENT DATE: "+ feature.properties.Incident_Date +"<br> ADDRESS: "+ feature.properties.Address + ", " + feature.properties.Boro +"<br> EQUIPMENT: "+ feature.properties.EquipmentDetails +"<br> INJURIES: "+feature.properties.Injury+"<br> FATALITIES: "+feature.properties.Fatality+"<br> ACCIDENT TYPE: "+ feature.properties.Equipacctype+"<br> CAUSE: "+feature.properties.Equipacccause; -->
+				<!-- var popupOptions = {"className": "popupCustom"}; -->
+				<!-- return L.circleMarker(latlng, geojsonMarkerOptions).bindPopup(popupContent,popupOptions); -->
+				
+			<!-- } -->
+					
+		<!-- }); -->
+		
+		
+		function currentData() {
+			switch(currentYear.toString()) {
+				case '2007':
+					update2007();
+					break;
+				case '2008':
+					update2008();
+					break;
+				case '2009':
+					update2009();
+					break;
+				case '2010':
+					update2010();
+					break;
+				case '2011':
+					update2011();
+					break;
+				case '2012':
+					update2012();
+					break;
+				case '2013':
+					update2013();
+					break;
+				case '2014':
+					update2014();
+					break;
+				case '2015':
+					update2015();
+					break;
+				case '2016':
+					update2016();
+					break;
+			}
+		}
+				
+	function update2007() {	
+		map.eachLayer (function (layer) {
+			if (layer != stamen) {
+				map.removeLayer(layer);
+			}
+		});
+        var geojsonMarkerOptions = {
+			radius: 6,
+			fillColor: "#FF5500",
+			<!-- //color: "#000", -->
+			weight: 0,
+			<!-- //opacity: 1, -->
+			fillOpacity: 0.8
+		};
+			
+		var pnts = new L.geoJson.ajax("data/CraneAccidents_2007.json", {	
+			pointToLayer: function (feature, latlng) {
+				var popupContent = "INCIDENT DATE: "+ feature.properties.Incident_Date +"<br> ADDRESS: "+ feature.properties.Address + ", " + feature.properties.Boro +"<br> EQUIPMENT: "+ feature.properties.EquipmentDetails +"<br> INJURIES: "+feature.properties.Injury+"<br> FATALITIES: "+feature.properties.Fatality+"<br> ACCIDENT TYPE: "+ feature.properties.Equipacctype+"<br> CAUSE: "+feature.properties.Equipacccause;
+				var popupOptions = {"className": "popupCustom"};
+				return L.circleMarker(latlng, geojsonMarkerOptions).bindPopup(popupContent,popupOptions);
+				
+			}
+					
+		});
+		pnts.addTo(map);
+		
+		function highlightFeature(e) {
+			var layer = e.layer;
+			layer.setStyle({
+			weight: 2,
+			color: "#eef442",
+			fillOpacity: 0.7
+			});
+		}
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mousemove: highlightFeature
+			});
+		}
+	}
+	function update2008() {	
+		map.eachLayer (function (layer) {
+			if (layer != stamen) {
+				map.removeLayer(layer);
+			}
+		});
+		var geojsonMarkerOptions = {
+			radius: 6,
+			fillColor: "#FF5500",
+			<!-- //color: "#000", -->
+			weight: 0,
+			<!-- //opacity: 1, -->
+			fillOpacity: 0.8
+		};
+			
+		var pnts = new L.geoJson.ajax("data/CraneAccidents_2008.json", {	
+			pointToLayer: function (feature, latlng) {
+				var popupContent = "INCIDENT DATE: "+ feature.properties.Incident_Date +"<br> ADDRESS: "+ feature.properties.Address + ", " + feature.properties.Boro +"<br> EQUIPMENT: "+ feature.properties.EquipmentDetails +"<br> INJURIES: "+feature.properties.Injury+"<br> FATALITIES: "+feature.properties.Fatality+"<br> ACCIDENT TYPE: "+ feature.properties.Equipacctype+"<br> CAUSE: "+feature.properties.Equipacccause;
+				var popupOptions = {"className": "popupCustom"};
+				return L.circleMarker(latlng, geojsonMarkerOptions).bindPopup(popupContent,popupOptions);
+				
+			}
+					
+		});
+		pnts.addTo(map);
+		
+		function highlightFeature(e) {
+			var layer = e.layer;
+			layer.setStyle({
+			weight: 2,
+			color: "#eef442",
+			fillOpacity: 0.7
+			});
+		}
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mousemove: highlightFeature
+			});
+		}
+	}
+	function update2009() {	
+		map.eachLayer (function (layer) {
+			if (layer != stamen) {
+				map.removeLayer(layer);
+			}
+		});
+		var geojsonMarkerOptions = {
+			radius: 6,
+			fillColor: "#FF5500",
+			<!-- //color: "#000", -->
+			weight: 0,
+			<!-- //opacity: 1, -->
+			fillOpacity: 0.8
+		};
+			
+		var pnts = new L.geoJson.ajax("data/CraneAccidents_2009.json", {	
+			pointToLayer: function (feature, latlng) {
+				var popupContent = "INCIDENT DATE: "+ feature.properties.Incident_Date +"<br> ADDRESS: "+ feature.properties.Address + ", " + feature.properties.Boro +"<br> EQUIPMENT: "+ feature.properties.EquipmentDetails +"<br> INJURIES: "+feature.properties.Injury+"<br> FATALITIES: "+feature.properties.Fatality+"<br> ACCIDENT TYPE: "+ feature.properties.Equipacctype+"<br> CAUSE: "+feature.properties.Equipacccause;
+				var popupOptions = {"className": "popupCustom"};
+				return L.circleMarker(latlng, geojsonMarkerOptions).bindPopup(popupContent,popupOptions);
+				
+			}
+					
+		});
+		pnts.addTo(map);
+		
+		function highlightFeature(e) {
+			var layer = e.layer;
+			layer.setStyle({
+			weight: 2,
+			color: "#eef442",
+			fillOpacity: 0.7
+			});
+		}
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mousemove: highlightFeature
+			});
+		}
+	}
+	function update2010() {	
+		map.eachLayer (function (layer) {
+			if (layer != stamen) {
+				map.removeLayer(layer);
+			}
+		});
+		var geojsonMarkerOptions = {
+			radius: 6,
+			fillColor: "#FF5500",
+			<!-- //color: "#000", -->
+			weight: 0,
+			<!-- //opacity: 1, -->
+			fillOpacity: 0.8
+		};
+			
+		var pnts = new L.geoJson.ajax("data/CraneAccidents_2010.json", {	
+			pointToLayer: function (feature, latlng) {
+				var popupContent = "INCIDENT DATE: "+ feature.properties.Incident_Date +"<br> ADDRESS: "+ feature.properties.Address + ", " + feature.properties.Boro +"<br> EQUIPMENT: "+ feature.properties.EquipmentDetails +"<br> INJURIES: "+feature.properties.Injury+"<br> FATALITIES: "+feature.properties.Fatality+"<br> ACCIDENT TYPE: "+ feature.properties.Equipacctype+"<br> CAUSE: "+feature.properties.Equipacccause;
+				var popupOptions = {"className": "popupCustom"};
+				return L.circleMarker(latlng, geojsonMarkerOptions).bindPopup(popupContent,popupOptions);
+				
+			}
+					
+		});
+		pnts.addTo(map);
+		
+		function highlightFeature(e) {
+			var layer = e.layer;
+			layer.setStyle({
+			weight: 2,
+			color: "#eef442",
+			fillOpacity: 0.7
+			});
+		}
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mousemove: highlightFeature
+			});
+		}
+	}
+	function update2011() {	
+		map.eachLayer (function (layer) {
+			if (layer != stamen) {
+				map.removeLayer(layer);
+			}
+		});
+		var geojsonMarkerOptions = {
+			radius: 6,
+			fillColor: "#FF5500",
+			<!-- //color: "#000", -->
+			weight: 0,
+			<!-- //opacity: 1, -->
+			fillOpacity: 0.8
+		};
+			
+		var pnts = new L.geoJson.ajax("data/CraneAccidents_2011.json", {	
+			pointToLayer: function (feature, latlng) {
+				var popupContent = "INCIDENT DATE: "+ feature.properties.Incident_Date +"<br> ADDRESS: "+ feature.properties.Address + ", " + feature.properties.Boro +"<br> EQUIPMENT: "+ feature.properties.EquipmentDetails +"<br> INJURIES: "+feature.properties.Injury+"<br> FATALITIES: "+feature.properties.Fatality+"<br> ACCIDENT TYPE: "+ feature.properties.Equipacctype+"<br> CAUSE: "+feature.properties.Equipacccause;
+				var popupOptions = {"className": "popupCustom"};
+				return L.circleMarker(latlng, geojsonMarkerOptions).bindPopup(popupContent,popupOptions);
+				
+			}
+					
+		});
+		pnts.addTo(map);
+		
+		function highlightFeature(e) {
+			var layer = e.layer;
+			layer.setStyle({
+			weight: 2,
+			color: "#eef442",
+			fillOpacity: 0.7
+			});
+		}
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mousemove: highlightFeature
+			});
+		}
+	}
+	function update2012() {	
+		map.eachLayer (function (layer) {
+			if (layer != stamen) {
+				map.removeLayer(layer);
+			}
+		});
+		var geojsonMarkerOptions = {
+			radius: 6,
+			fillColor: "#FF5500",
+			<!-- //color: "#000", -->
+			weight: 0,
+			<!-- //opacity: 1, -->
+			fillOpacity: 0.8
+		};
+			
+		var pnts = new L.geoJson.ajax("data/CraneAccidents_2012.json", {	
+			pointToLayer: function (feature, latlng) {
+				var popupContent = "INCIDENT DATE: "+ feature.properties.Incident_Date +"<br> ADDRESS: "+ feature.properties.Address + ", " + feature.properties.Boro +"<br> EQUIPMENT: "+ feature.properties.EquipmentDetails +"<br> INJURIES: "+feature.properties.Injury+"<br> FATALITIES: "+feature.properties.Fatality+"<br> ACCIDENT TYPE: "+ feature.properties.Equipacctype+"<br> CAUSE: "+feature.properties.Equipacccause;
+				var popupOptions = {"className": "popupCustom"};
+				return L.circleMarker(latlng, geojsonMarkerOptions).bindPopup(popupContent,popupOptions);
+				
+			}
+					
+		});
+		pnts.addTo(map);
+		
+		function highlightFeature(e) {
+			var layer = e.layer;
+			layer.setStyle({
+			weight: 2,
+			color: "#eef442",
+			fillOpacity: 0.7
+			});
+		}
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mousemove: highlightFeature
+			});
+		}
+	}
+	function update2013() {	
+		map.eachLayer (function (layer) {
+			if (layer != stamen) {
+				map.removeLayer(layer);
+			}
+		});
+		var geojsonMarkerOptions = {
+			radius: 6,
+			fillColor: "#FF5500",
+			<!-- //color: "#000", -->
+			weight: 0,
+			<!-- //opacity: 1, -->
+			fillOpacity: 0.8
+		};
+			
+		var pnts = new L.geoJson.ajax("data/CraneAccidents_2013.json", {	
+			pointToLayer: function (feature, latlng) {
+				var popupContent = "INCIDENT DATE: "+ feature.properties.Incident_Date +"<br> ADDRESS: "+ feature.properties.Address + ", " + feature.properties.Boro +"<br> EQUIPMENT: "+ feature.properties.EquipmentDetails +"<br> INJURIES: "+feature.properties.Injury+"<br> FATALITIES: "+feature.properties.Fatality+"<br> ACCIDENT TYPE: "+ feature.properties.Equipacctype+"<br> CAUSE: "+feature.properties.Equipacccause;
+				var popupOptions = {"className": "popupCustom"};
+				return L.circleMarker(latlng, geojsonMarkerOptions).bindPopup(popupContent,popupOptions);
+				
+			}
+					
+		});
+		pnts.addTo(map);
+		
+		function highlightFeature(e) {
+			var layer = e.layer;
+			layer.setStyle({
+			weight: 2,
+			color: "#eef442",
+			fillOpacity: 0.7
+			});
+		}
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mousemove: highlightFeature
+			});
+		}
+	}
+	function update2014() {	
+		map.eachLayer (function (layer) {
+			if (layer != stamen) {
+				map.removeLayer(layer);
+			}
+		});
+		var geojsonMarkerOptions = {
+			radius: 6,
+			fillColor: "#FF5500",
+			<!-- //color: "#000", -->
+			weight: 0,
+			<!-- //opacity: 1, -->
+			fillOpacity: 0.8
+		};
+			
+		var pnts = new L.geoJson.ajax("data/CraneAccidents_2014.json", {	
+			pointToLayer: function (feature, latlng) {
+				var popupContent = "INCIDENT DATE: "+ feature.properties.Incident_Date +"<br> ADDRESS: "+ feature.properties.Address + ", " + feature.properties.Boro +"<br> EQUIPMENT: "+ feature.properties.EquipmentDetails +"<br> INJURIES: "+feature.properties.Injury+"<br> FATALITIES: "+feature.properties.Fatality+"<br> ACCIDENT TYPE: "+ feature.properties.Equipacctype+"<br> CAUSE: "+feature.properties.Equipacccause;
+				var popupOptions = {"className": "popupCustom"};
+				return L.circleMarker(latlng, geojsonMarkerOptions).bindPopup(popupContent,popupOptions);
+				
+			}
+					
+		});
+		pnts.addTo(map);
+		
+		function highlightFeature(e) {
+			var layer = e.layer;
+			layer.setStyle({
+			weight: 2,
+			color: "#eef442",
+			fillOpacity: 0.7
+			});
+		}
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mousemove: highlightFeature
+			});
+		}
+	}
+	function update2015() {	
+		map.eachLayer (function (layer) {
+			if (layer != stamen) {
+				map.removeLayer(layer);
+			}
+		});
+		var geojsonMarkerOptions = {
+			radius: 6,
+			fillColor: "#FF5500",
+			<!-- //color: "#000", -->
+			weight: 0,
+			<!-- //opacity: 1, -->
+			fillOpacity: 0.8
+		};
+			
+		var pnts = new L.geoJson.ajax("data/CraneAccidents_2015.json", {	
+			pointToLayer: function (feature, latlng) {
+				var popupContent = "INCIDENT DATE: "+ feature.properties.Incident_Date +"<br> ADDRESS: "+ feature.properties.Address + ", " + feature.properties.Boro +"<br> EQUIPMENT: "+ feature.properties.EquipmentDetails +"<br> INJURIES: "+feature.properties.Injury+"<br> FATALITIES: "+feature.properties.Fatality+"<br> ACCIDENT TYPE: "+ feature.properties.Equipacctype+"<br> CAUSE: "+feature.properties.Equipacccause;
+				var popupOptions = {"className": "popupCustom"};
+				return L.circleMarker(latlng, geojsonMarkerOptions).bindPopup(popupContent,popupOptions);
+				
+			}
+					
+		});
+		pnts.addTo(map);
+		
+		function highlightFeature(e) {
+			var layer = e.layer;
+			layer.setStyle({
+			weight: 2,
+			color: "#eef442",
+			fillOpacity: 0.7
+			});
+		}
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mousemove: highlightFeature
+			});
+		}
+	}
+	function update2016() {	
+		map.eachLayer (function (layer) {
+			if (layer != stamen) {
+				map.removeLayer(layer);
+			}
+		});
+		var geojsonMarkerOptions = {
+			radius: 6,
+			fillColor: "#FF5500",
+			<!-- //color: "#000", -->
+			weight: 0,
+			<!-- //opacity: 1, -->
+			fillOpacity: 0.8
+		};
+			
+		var pnts = new L.geoJson.ajax("data/CraneAccidents_2016.json", {	
+			pointToLayer: function (feature, latlng) {
+				var popupContent = "INCIDENT DATE: "+ feature.properties.Incident_Date +"<br> ADDRESS: "+ feature.properties.Address + ", " + feature.properties.Boro +"<br> EQUIPMENT: "+ feature.properties.EquipmentDetails +"<br> INJURIES: "+feature.properties.Injury+"<br> FATALITIES: "+feature.properties.Fatality+"<br> ACCIDENT TYPE: "+ feature.properties.Equipacctype+"<br> CAUSE: "+feature.properties.Equipacccause;
+				var popupOptions = {"className": "popupCustom"};
+				return L.circleMarker(latlng, geojsonMarkerOptions).bindPopup(popupContent,popupOptions);
+				
+			}
+					
+		});
+		pnts.addTo(map);
+		
+		function highlightFeature(e) {
+			var layer = e.layer;
+			layer.setStyle({
+			weight: 2,
+			color: "#eef442",
+			fillOpacity: 0.7
+			});
+		}
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mousemove: highlightFeature
+			});
+		}
+	}
+	
+	d3.select("#slider") 
+		.call(
+		  chroniton()  
+			.domain([new Date(startYear, 1, 1), new Date(endYear, 1, 1)])  
+			.labelFormat(function(date) {
+			  return Math.ceil(date.getFullYear());  
+			})
+			.width(600)  
+		.on('change', function(date) { 
+		  var newYear = Math.ceil(date.getFullYear());  
+		  if (newYear != currentYear) { 
+			currentYear = newYear;
+			//g.selectAll("path").remove(); 
+			g.selectAll("path")
+				//.transition().duration(500);
+			//ready_2000();
+			//updateData();
+			currentData();
+		  }
+		})
+		//.playButton(true) 
+		//.playbackRate(0.3)
+		//.loop(true)
+	);
+		
+		
+		
+    </script>
+</body>
+</html>
