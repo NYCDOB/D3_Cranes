@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Crane Accidents</title>
+    <title>DM Density Map</title>
     <meta charset="utf-8" />
 	<link rel="stylesheet" href="leaflet.css" type="text/css" media="screen" />
 	<link rel="stylesheet" href="style2.css" type="text/css" media="screen" />
@@ -10,33 +10,32 @@
 	
 </head>
 <style>
-	.info {
-		padding: 6px 8px;
-		background: white;
-		background: rgba(255,255,255,0.8);
-		box-shadow: 0 0 25px rgba(0,0,0,0.2);
-		border-radius: 5px;
-	}
-	.legend {
-		line-height: 34px;
-		color: #000000;
-		font-weight: bold;
-	}
-	.legend i {
-		width: 34px;
-		height: 34px;
-		float: left;
-		margin-right: 8px;
-		opacity: 0.7;
-	}
+	<!-- #slider { -->
+		<!-- position: absolute; -->
+		<!-- left: 50%; -->
+		<!-- margin-left: -390px; -->
+		<!-- bottom: 160px; -->
+		<!-- width: 600px; -->
+		<!-- height: 50px;	 -->
+	<!-- } -->
+	<!-- #slider { -->
+		<!-- position:relative; -->
+		<!-- width:600px; -->
+		<!-- height:55px; -->
+		<!-- background: rgba(225,225,225,.9); -->
+		<!-- margin-left:-100px; -->
+		<!-- top:-810px; -->
+	<!-- } -->
 	#slider {
-		position: static;
-		margin-left: 250px;	
+		position:initial;
+		margin-left:70px;
+		top:-810px;
 	}
 </style>
 <body>
 
-    <div id="map" style="width: 1064px; height: 820px"></div>
+    <!-- <div id="map" style="width: 1064px; height: 820px"></div> -->
+	<div id="map" style="width: 750px; height: 550px"></div>
 	<div id="slider"></div> 
 
 	<script src="https://d3js.org/d3.v3.min.js"></script>
@@ -55,7 +54,8 @@
 
 		
 	
-		var map = L.map('map').setView([40.705,-73.909], 11);
+		<!-- var map = L.map('map').setView([40.705,-73.909], 11); -->
+		var map = L.map('map').setView([40.693703, -73.964477], 11);
 		var toolserver = L.tileLayer('http://{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png');
 		//var stamen = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {attribution: ''}).addTo(map); /*Stamen.Toner*/
 		var stamen = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {attribution: ''}).addTo(map); /*Stamen.TonerLite*/
