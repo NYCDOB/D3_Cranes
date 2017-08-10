@@ -31,6 +31,10 @@
 		margin-left:70px;
 		top:-810px;
 	}
+	.nvd3 text {
+		font: normal 12px sans-serif !important;
+	}
+
 </style>
 <body>
 
@@ -38,12 +42,21 @@
 	<div id="map" style="width: 750px; height: 550px"></div>
 	<div id="slider"></div> 
 
+	<div id="chart1" style="width: 750px; height: 550px">
+    <svg></svg>
+	</div>
+	<!-- <svg class="chart" transform="translate(600 -580)"></svg> -->
+	
 	<script src="https://d3js.org/d3.v3.min.js"></script>
 	<script src="./js/leaflet.js"></script>
 	<script src="./js/leaflet.ajax.min.js"></script>
 	<script src="jquery-2.1.1.min.js"></script>
 	<script src="static/chroniton.js"></script>
 	<link href="static/chroniton.css" rel="stylesheet">
+	
+	<link href="build/nv.d3.css" rel="stylesheet" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
+    <script src="build/nv.d3.js"></script>
 	<!-- <script type="text/javascript" src="data/DM_2016_LatLong.json"></script> -->
 	<!-- <script type="text/javascript" src="DM_2016_LatLong_2.json"></script> -->
 
@@ -571,7 +584,99 @@
 		//.loop(true)
 	);
 		
+	/*BAR CHART*/
+    historicalBarChart = [
+	 {
+		key: "Crawler Crane",
+		color: "#DB5600",
+		values:
+		[ 
+			{ x : "2007" , y : 0 },
+			{ x : "2008" , y : 2 },
+			{ x : "2009" , y : 1 },
+			{ x : "2010" , y : 0 },
+			{ x : "2011" , y : 0 },
+			{ x : "2012" , y : 2 },
+			{ x : "2013" , y : 1 },
+			{ x : "2014" , y : 2 },
+			{ x : "2015" , y : 3 },
+			{ x : "2016" , y : 3 }
+		  ]
+	  },
+	 {
+		key: "Tower Crane",
+		color: "#64B5CD",
+		values:
+		[      
+			{ x : "2007" , y : 6 },
+			{ x : "2008" , y : 5 },
+			{ x : "2009" , y : 4 },
+			{ x : "2010" , y : 2 },
+			{ x : "2011" , y : 3 },
+			{ x : "2012" , y : 2 },
+			{ x : "2013" , y : 5 },
+			{ x : "2014" , y : 1 },
+			{ x : "2015" , y : 3 },
+			{ x : "2016" , y : 12 }
+		]
+	  },
+	  {
+		key: "Truck Crane",
+		color: "#DBC256",
+		values:
+		[      
+			{ x : "2007" , y : 1 },
+			{ x : "2008" , y : 2 },
+			{ x : "2009" , y : 0 },
+			{ x : "2010" , y : 0 },
+			{ x : "2011" , y : 0 },
+			{ x : "2012" , y : 0 },
+			{ x : "2013" , y : 0 },
+			{ x : "2014" , y : 0 },
+			{ x : "2015" , y : 0 },
+			{ x : "2016" , y : 0 }
+		]
+	  },
+	  {
+		key: "Mobile Truck Crane",
+		color: "#91DB56",
+		values:
+		[      
+			{ x : "2007" , y : 0 },
+			{ x : "2008" , y : 1 },
+			{ x : "2009" , y : 2 },
+			{ x : "2010" , y : 5 },
+			{ x : "2011" , y : 4 },
+			{ x : "2012" , y : 2 },
+			{ x : "2013" , y : 8 },
+			{ x : "2014" , y : 0 },
+			{ x : "2015" , y : 4 },
+			{ x : "2016" , y : 3 }
+		]
+	  }
+	];
+		nv.addGraph(function() {
+			var chart = nv.models.multiBarChart()		
+			.showControls(true)
+			.stacked(true);
+			
+			chart.yAxis
+				//.tickFormat(d3.format(',.0f'))
+				.tickFormat(d3.format('.2s'))
+				.axisLabelDistance(0);
+			chart.xAxis
+				.showMaxMin(true)
+				.staggerLabels(true)
+				.axisLabel('');
+			chart
+				.reduceXTicks(true)
 		
+			d3.select('#chart1 svg')
+				.datum(historicalBarChart)
+				.call(chart);
+			nv.utils.windowResize(chart.update);
+			return chart;
+		});	
 		
     </script>
 </body>
