@@ -97,7 +97,10 @@ div.tooltip .val { float: right; color: red; font-weight: bold; width: 75px; tex
 	/* fill-opacity: .7; */
 	
 /* } */
-	 
+#chart1 {
+	margin-left: 750px;
+	margin-top: -555px;
+}	 
 
 path.NODATA { fill: #fff; stroke-width: .5px }
 
