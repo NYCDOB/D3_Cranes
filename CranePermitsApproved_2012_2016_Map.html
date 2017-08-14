@@ -198,7 +198,7 @@ function setMap() {
 }
 function loadData() {
   queue()   // queue function loads all external data files asynchronously 
-    .defer(d3.json, "data/CD_topoJSON.json")  // our geometries
+    .defer(d3.json, "data/CD_topoJSON_2.json")  // our geometries
     .defer(d3.csv, "data/CranePermitsApproved_CD_2012_2016.csv")  // and associated data in csv file
     .await(processData);   // once all files are loaded, call the processData function passing
                            // the loaded objects as arguments
