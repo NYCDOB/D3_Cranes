@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
+	<link rel="stylesheet" href="style2.css" type="text/css" media="screen" />
     <title>Crane Permits Approved 2012-2016</title>
     <style>
       .stroke {
@@ -50,7 +51,8 @@
 	h1 {
 		font-size: 25px;
 		position: absolute;
-		top: -15px;
+		<!-- top: -15px; -->
+		top: auto;
 		left: 15px;
 		font-family: "Arial", "Verdana", Sans-serif;
 		font-weight: bold;
@@ -117,6 +119,7 @@
 		border-radius: 8px;			
 		pointer-events: none;			
 	}
+
     </style>
 </head>
 
@@ -124,26 +127,32 @@
 
 	<div id="wrapper">	
 		<h1>Crane Permits Approved</h1>
-		<!-- <h2>Average Workdays</h2> -->
-		<!-- <div id="map"></div> -->
+
+		<!-- <div id="map" style="width: 750px; height: 550px"></div> -->
+		
 		<div class="col-md-6" id="map"></div>
-		<!-- <div class="col-md-6" id="mapChart"></div> -->
+		<!-- <svg class="chart" transform="translate(600px -580px)"></svg> -->
 		<button id="play">play</button>
 		<span id="clock">2012</span>
+		<div id="permitchart" style="width: 750px; height: 550px"><svg></svg></div>
 	</div>
 
-<svg class="chart" transform="translate(600 -580)"></svg>
+
+<!-- <svg class="chart" ></svg> -->
+
 
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <script src="https://d3js.org/d3.geo.projection.v0.min.js"></script>
 <script src="https://d3js.org/queue.v1.min.js"></script>
 <script src="https://d3js.org/topojson.v1.min.js"></script>
 
-
-
 <script>
 //MAP
   //globals
+var startYear = 2012;
+var endYear = 2016;
+var currentYear = startYear;
+
 var width, height, center, projection, path, svg, attributeArray = [], currentAttribute = 0, playing = false, g;
 var legend_labels = ["<20", "20 - 49", "50 - 84", "85 - 149", "150 - 274", "275 - 499", ">=500"]
 var color_domain = [20,50,85,150,275,500]
@@ -165,6 +174,8 @@ svg = d3.select("#map").append("svg")   // append a svg to our html div to hold 
   .attr("height", height);
 loadData();  // let's load our data next
 g = svg.append("g");
+
+
 function init() {
   //setMap();
   chartUpdate(0);
@@ -187,7 +198,7 @@ function setMap() {
 }
 function loadData() {
   queue()   // queue function loads all external data files asynchronously 
-    .defer(d3.json, "data/CD_topoJSON_2.json")  // our geometries
+    .defer(d3.json, "data/CD_topoJSON.json")  // our geometries
     .defer(d3.csv, "data/CranePermitsApproved_CD_2012_2016.csv")  // and associated data in csv file
     .await(processData);   // once all files are loaded, call the processData function passing
                            // the loaded objects as arguments
@@ -382,12 +393,15 @@ legend.append("text")
 	.text(function(d, i){return legend_labels[i];});
 window.onload = init();  // magic starts here
 
+
+
 //BAR CHART
 // Define the div for the tooltip
 var div = d3.select("body").append("div")	
     .attr("class", "tooltip")				
     .style("opacity", 0);
 	
+<!-- var margin = {top: 30, right: 20, bottom: 30, left: 40}, -->
 var margin = {top: 30, right: 20, bottom: 30, left: 40},
     <!-- width = 960 - margin.left - margin.right, -->
     <!-- height = 500 - margin.top - margin.bottom; -->
@@ -408,11 +422,18 @@ var yAxis = d3.svg.axis()
     .scale(y)
     .orient("left");
 
-var chart = d3.select(".chart")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+var permitchart = d3.select("#permitchart").append("svg")
+    <!-- .attr("width", width + margin.left + margin.right) -->
+    <!-- .attr("height", height + margin.top + margin.bottom) -->
+	.attr("width", window.innerWidth + margin.left + margin.right )
+    .attr("height", window.innerHeight + margin.top + margin.bottom )
+	<!-- .style("width", window.innerWidth + "px") -->
+	<!-- .style("height", window.innerHeight + "px") -->
+	
+
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
 // function for the x grid lines
 <!-- function make_x_axis() { -->
     <!-- return d3.svg.axis() -->
@@ -461,7 +482,7 @@ function update(error, data) {
             <!-- .tickFormat("") -->
         <!-- ) -->
   // Draw the y Grid lines
-    chart.append("g")            
+    permitchart.append("g")            
         .attr("class", "grid")
         .call(make_y_axis()
             .tickSize(-width+30, 20, 0)
@@ -469,8 +490,8 @@ function update(error, data) {
         )
   
   
-  chart.select(".x.axis").remove();
-  chart.append("g")
+  permitchart.select(".x.axis").remove();
+  permitchart.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis)
@@ -480,19 +501,19 @@ function update(error, data) {
 	.attr("dy", ".35em")
 	.attr("transform", "rotate(90)")
 	.style("text-anchor", "start");	
-  chart.select(".y.axis").remove();
-  chart.append("g")
+  permitchart.select(".y.axis").remove();
+  permitchart.append("g")
       .attr("class", "y axis")
 	  .attr("transform", "translate(20)")
       .call(yAxis);
-  chart.selectAll(".bar").remove();
-  chart.selectAll(".bar")
+  permitchart.selectAll(".bar").remove();
+  permitchart.selectAll(".bar")
 	.transition()
 	.duration(300)
 	.ease("exp")
 	.attr("width", 0).remove()
 
-  chart.selectAll(".bar")
+  permitchart.selectAll(".bar")
       .data(data)
     .enter().append("rect")
 	  .on("mouseover", function(d,i) {
@@ -540,6 +561,7 @@ function type(d) {
   d.Cnt = +d.Cnt; // coerce to number
   return d;
 }
+
 </script>
 </body>
 </html>
